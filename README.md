@@ -5,6 +5,7 @@
 - [План развития инженерных процессов](PM/TeamLead-plan.md).
 - [Распределение ответственности за выполнение плана](PM/TeamLead-responsibility.md).
 - [Владельцы компонентов и выбор reviewer](CONTRIBUTING.md) — TL-01, назначения частично ожидают подтверждения.
+- [PR template для UI, CLI и AI](CONTRIBUTING.md#pr-template-для-github-ui-cli-и-ai--tl-03).
 - [Issue tracker](agents/issue-tracker.md), [triage labels](agents/triage-labels.md), [domain docs](agents/domain.md).
 - [PRD: SSL/Certbot gateway](prd/001-ssl-certbot-gateway.md) и [декомпозиция](prd/001-ssl-certbot-gateway-slices.md).
 
