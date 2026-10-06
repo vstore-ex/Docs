@@ -62,11 +62,14 @@ certificate adoption procedure documented in the infrastructure README and
 [edge guide](edge-security.md).
 
 Both SSH deployment workflows use `umask 077` before creating locks, temporary
-state or snapshots. They run the permission helper under the shared deployment
-lock before release adoption/convergence. Infra CD uses the updated helper after
-syncing the reviewed infrastructure change. App CD requires that helper already
-installed in the host clone; install infrastructure tooling before allowing
-updated reusable app workflows to run.
+state or snapshots. They run a permission preflight before opening `.deploy.lock`
+so an unsafe lock link cannot redirect shell truncation. After acquiring the
+shared lock, they recheck/repair retained files before release adoption/convergence.
+Infra CD also applies the synced helper after the reviewed config update.
+Install the trusted helper in the host clone before merging this infrastructure
+change or allowing updated reusable app workflows to run. A host without the
+helper fails closed before locking or syncing; it cannot bootstrap itself through
+this updated workflow. This initial installation is an operator adoption step.
 
 If the helper encounters an unsafe backup path after securing earlier paths,
 those restrictions remain in place. It does not restore insecure modes on error.
