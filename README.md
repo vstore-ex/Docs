@@ -8,6 +8,7 @@
 - [Единый процесс веток, review и merge](CONTRIBUTING.md#единый-процесс-изменений--tl-02) — TL-02, предложен к утверждению.
 - [PR template для UI, CLI и AI](CONTRIBUTING.md#pr-template-для-github-ui-cli-и-ai--tl-03).
 - [Issue tracker](agents/issue-tracker.md), [triage labels](agents/triage-labels.md), [domain docs](agents/domain.md).
+- [Private deployment permissions, secrets and snapshots](infra/deployment-permissions.md) — A16.
 - [Edge image security gate, adoption and rollback](infra/edge-security.md) — A05.
 - [Upstream recovery and HTTPS API deployment gates](infra/upstream-recovery.md) — A02.
 - [Trusted client identity: proxy trust, rollout and backend handoff](infra/client-identity.md) — A03.
