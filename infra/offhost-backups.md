@@ -90,7 +90,9 @@ to silently omit them. The database dump covers the API's selected database,
 not unrelated databases on the same server.
 
 Existing containers resume before upload. Backup never recreates images or runs
-migrations. A private, atomically published resume journal records exact container
+migrations. A forced/failed writer stop or OOM prevents publication of a recovery
+point; drain active jobs and retry in an adequate maintenance window. A private,
+atomically published resume journal records exact container
 IDs before stopping services. Termination attempts resume; after abrupt VM loss,
 the next run resumes before contacting Azure. `ExecStopPost` also calls resume
 without needing repository credentials. A changed container ID requires manual
@@ -133,6 +135,7 @@ The source stack must be healthy and tracked files clean.
    ```bash
    set +x
    umask 077
+   # Work inside a trusted private escrow directory, outside any Git clone.
    az storage container generate-sas --account-name vstorestorage \
      --name vstore-backups --auth-mode key --permissions racwdl \
      --https-only --expiry '<reviewed UTC expiry>' -o tsv > repository.sas
@@ -143,6 +146,15 @@ The source stack must be healthy and tracked files clean.
    that escrow before enabling backups. Do not store the only password/SAS copy
    in `.env`, the repository itself or a GitHub Issue/PR. A read-only recovery SAS
    may require `restic --no-lock`; the supplied recovery CLI uses normal locks.
+
+   ```bash
+   umask 077
+   openssl rand -hex 32 > /private/offvm-escrow/password
+   chmod 600 /private/offvm-escrow/password /private/offvm-escrow/repository.sas
+   ```
+
+   Use a trusted new password destination in a directory owned by the operator,
+   mode 0700. Do not overwrite the password of an initialized repository.
 
 4. On the deployment account, install Python 3.10+, Compose v2 and the verified
    backup tools, keeping their configuration outside the clone:
@@ -226,8 +238,9 @@ python scripts/offhost-backup.py --config /private/backup-config.json retention
 python scripts/offhost-backup.py --config /private/backup-config.json retention --apply
 ```
 
-The policy selects completed copies for this host/tag, keeps four calendar-week
-representatives and at least the latest two, then prunes unreferenced data only
+The policy selects completed copies for this host/tag, keeps representatives
+from the latest four weeks that contain snapshots and at least the latest two,
+then prunes unreferenced data only
 with `--apply`. A missed week has no representative; this is not necessarily
 exactly four snapshots. Azure soft-deleted objects can continue to incur costs.
 
@@ -237,6 +250,11 @@ vstore-a06-pending`; verify no active upload uses them before explicitly forgett
 reviewed IDs and pruning. Never delete raw repository objects or apply an Azure
 lifecycle rule based on their ages. Never force-unlock a repository until all
 backup/maintenance clients are confirmed stopped.
+
+An abrupt process/host kill can also leave private local `backups/offhost-*`
+staging directories. Review and remove abandoned staging under the shared lock,
+only after confirming no active/orphaned backup client still reads it. Normal
+success and handled failure remove their temporary staging automatically.
 
 If interrupted capture leaves services stopped, run `offhost-backup.py resume`
 from the deployment directory with the deployment account. It uses the shared
