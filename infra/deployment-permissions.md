@@ -43,9 +43,13 @@ With the reviewed helper and correct ownership, run as the deployment user:
 
 ```bash
 cd ~/vstore
-python3 scripts/secure-deployment.py
-python3 scripts/secure-deployment.py --check
-bash scripts/compose.sh verify
+(
+  set -euo pipefail
+  umask 077
+  python3 scripts/secure-deployment.py
+  python3 scripts/secure-deployment.py --check
+  bash scripts/compose.sh verify
+)
 ```
 
 The helper applies private modes, creates `backups/` privately if absent and
