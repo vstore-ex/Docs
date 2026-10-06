@@ -39,14 +39,18 @@ account's home/parent must not permit unrelated users to replace the deployment
 directory. If ownership is wrong, an administrator should correct only the
 reviewed private paths; preserve application-owned storage.
 
-With the reviewed helper and correct ownership, run as the deployment user:
+Keep the reviewed helper outside the formerly world-writable clone for first
+adoption. In the example, `/trusted/secure-deployment.py` is that trusted copy;
+replace the path before running. With correct ownership, run as the deployment
+user:
 
 ```bash
 cd ~/vstore
 (
   set -euo pipefail
   umask 077
-  python3 scripts/secure-deployment.py
+  python3 /trusted/secure-deployment.py --directory "$PWD"
+  install -m 0700 /trusted/secure-deployment.py scripts/secure-deployment.py
   python3 scripts/secure-deployment.py --check
   bash scripts/compose.sh verify
 )
@@ -120,7 +124,9 @@ both SSH workflow scripts and exercises successful deployment plus rollback.
 
 ## Recovery and rollback
 
-Keep the private modes when rolling back code or an image. Permission tightening
+Keep the private modes when rolling back code or an image. If Git rollback to a
+pre-A16 commit removes the tracked helper, reinstall the reviewed copy before
+retrying updated CD. The workflow fails closed until it is restored. Permission tightening
 does not alter data, release history or container ownership. If deployment fails
 because a protected path has the wrong owner, correct that specific ownership
 with administrator review and retry the helper. Preserve unexpected links or
