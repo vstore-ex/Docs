@@ -118,7 +118,10 @@ With writers still stopped, change the database part of both `DATABASE_URL` and
 `POSTGRES_DB` to the verified target, preserving credentials. Recreate PostgreSQL
 with the same volume to refresh its `POSTGRES_DB` environment; changing this value
 does not rename an existing database or initialize a nonempty volume. Then start
-API and proxies with the approved digests, leaving worker stopped. Under the
+API and proxies with the approved digests, leaving worker stopped. Before starting
+edge, apply owner-approved maintenance access controls that keep public ingress
+closed while allowing the loopback TLS probe. A maintenance notice alone does not
+stop writes. Preserve the permanent admin-access policy. Under the
 already-held lock, direct Compose commands read A01's persisted image override:
 
 ```bash
